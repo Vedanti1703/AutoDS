@@ -1,0 +1,27 @@
+# Python & Environments
+venv/
+.venv/
+env/
+.env
+
+# Bytecode & Caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Runtime Artifacts & Storage
+outputs/
+model_registry/
+webapp/uploads/*
+!webapp/uploads/.gitkeep
+
+# OS generated
+.DS_Store
+Thumbs.db

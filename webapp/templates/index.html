@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoDS-Agent 2.0 — Autonomous Data Science & Explainable AutoML</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.0.1">
+</head>
+<body>
+
+<!-- Ambient background glow elements -->
+<div class="ambient-glow glow-1"></div>
+<div class="ambient-glow glow-2"></div>
+<div class="ambient-glow glow-3"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <span class="wordmark">AutoDS<span class="accent">/</span>Agent <span class="badge-v2">2.0</span></span>
+      <span class="tagline">Autonomous • Explainable • Scalable ML Platform</span>
+    </div>
+  </div>
+
+  <div class="topbar-actions">
+    <div class="status-pill" id="statusPill" data-state="idle">
+      <span class="dot-pulse"></span>
+      <span class="status-label" id="statusText">System Ready</span>
+    </div>
+    <button class="btn btn-sm btn-ghost" id="topbarResetBtn" title="Reset and start new analysis" hidden>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+      </svg>
+      New Run
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- Left rail: interactive pipeline tracker -->
+  <aside class="rail" id="rail" hidden>
+    <div class="rail-header">
+      <span class="rail-title">Pipeline Workflow</span>
+      <span class="rail-badge" id="railProgressBadge">0/13</span>
+    </div>
+    
+    <ol class="rail-steps" id="railSteps">
+      <li data-step="profile"><span class="step-num">1</span><span class="step-name">Profile Data</span><span class="step-check">✓</span></li>
+      <li data-step="eda"><span class="step-num">2</span><span class="step-name">Auto EDA</span><span class="step-check">✓</span></li>
+      <li data-step="preprocess"><span class="step-num">3</span><span class="step-name">Preprocess & Clean</span><span class="step-check">✓</span></li>
+      <li data-step="anomaly"><span class="step-num">4</span><span class="step-name">Anomaly Detection</span><span class="step-check">✓</span></li>
+      <li data-step="feature_eng"><span class="step-num">5</span><span class="step-name">Feature Engineering</span><span class="step-check">✓</span></li>
+      <li data-step="feature_sel"><span class="step-num">6</span><span class="step-name">Feature Selection</span><span class="step-check">✓</span></li>
+      <li data-step="imbalance"><span class="step-num">7</span><span class="step-name">Handle Imbalance</span><span class="step-check">✓</span></li>
+      <li data-step="model_select"><span class="step-num">8</span><span class="step-name">Model Selection</span><span class="step-check">✓</span></li>
+      <li data-step="tuning"><span class="step-num">9</span><span class="step-name">Optuna Bayesian Tune</span><span class="step-check">✓</span></li>
+      <li data-step="evaluation"><span class="step-num">10</span><span class="step-name">Evaluate Metrics</span><span class="step-check">✓</span></li>
+      <li data-step="explain"><span class="step-num">11</span><span class="step-name">SHAP Explainability</span><span class="step-check">✓</span></li>
+      <li data-step="export"><span class="step-num">12</span><span class="step-name">Artifact & Clean CSV</span><span class="step-check">✓</span></li>
+      <li data-step="report"><span class="step-num">13</span><span class="step-name">Audit Report</span><span class="step-check">✓</span></li>
+    </ol>
+    
+    <div class="rail-footer">
+      <button class="rail-reset" id="resetBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+        Reset Pipeline
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- VIEW 1: Upload & Initial State -->
+    <section class="view" id="view-upload">
+      <div class="hero">
+        <div class="hero-chip">
+          <span class="chip-spark">✨</span> End-to-End Autonomous Data Science Platform
+        </div>
+        <h1>Autonomous Machine Learning.<br><span class="gradient-text">Cleaned Data & Explanations Exported.</span></h1>
+        <p class="sub">
+          Ingest any CSV. The agent profiles scale, automates exploratory analysis, performs skew-aware imputation,
+          encodes categories, detects anomalies, balances classes, tunes ML models with Optuna, explains SHAP attributions,
+          and automatically generates downloadable cleaned CSV datasets.
+        </p>
+      </div>
+
+      <div class="dropzone-container">
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".csv" hidden>
+          <div class="dropzone-inner">
+            <div class="dz-icon-wrap">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="dz-label">Drag & drop your CSV dataset here, or <span class="link">browse files</span></div>
+            <div class="dz-hint">Supports Tabular Classification, Regression & Imbalanced Data • Up to 300MB</div>
+            <div class="dz-badges">
+              <span class="dz-badge">.CSV</span>
+              <span class="dz-badge">Auto-Imputation</span>
+              <span class="dz-badge">Cleaned CSV Export</span>
+              <span class="dz-badge">Optuna Tuning</span>
+              <span class="dz-badge">SHAP XAI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sample-section">
+        <div class="sample-title">Or test instantly with pre-configured benchmark datasets:</div>
+        <div class="sample-grid">
+          <button class="sample-card" data-sample="cancer">
+            <div class="sample-card-icon">🩺</div>
+            <div class="sample-card-info">
+              <div class="sample-card-name">Breast Cancer Demo</div>
+              <div class="sample-card-desc">Binary Classification • Missing Values Injected</div>
+            </div>
+            <span class="sample-card-arrow">→</span>
+          </button>
+
+          <button class="sample-card" data-sample="wine">
+            <div class="sample-card-icon">🍷</div>
+            <div class="sample-card-info">
+              <div class="sample-card-name">Wine Cultivars</div>
+              <div class="sample-card-desc">Multiclass (3 classes) • 13 Chemical Attributes</div>
+            </div>
+            <span class="sample-card-arrow">→</span>
+          </button>
+
+          <button class="sample-card" data-sample="diabetes">
+            <div class="sample-card-icon">📈</div>
+            <div class="sample-card-info">
+              <div class="sample-card-name">Diabetes Progression</div>
+              <div class="sample-card-desc">Continuous Regression • Baseline Physiology</div>
+            </div>
+            <span class="sample-card-arrow">→</span>
+          </button>
+
+          <button class="sample-card" data-sample="imbalanced">
+            <div class="sample-card-icon">⚠️</div>
+            <div class="sample-card-info">
+              <div class="sample-card-name">Imbalanced Fraud (95:5)</div>
+              <div class="sample-card-desc">Severe Imbalance • SMOTE Resampling Benchmarks</div>
+            </div>
+            <span class="sample-card-arrow">→</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="upload-error" id="uploadError" hidden></div>
+    </section>
+
+    <!-- VIEW 2: Configure & Target Selection -->
+    <section class="view" id="view-configure" hidden>
+      <div class="panel glass-panel">
+        <div class="panel-header">
+          <div>
+            <span class="badge-accent">Step 2: Configuration</span>
+            <h2>Dataset Ingestion & Target Selection</h2>
+            <p class="muted" id="confFilename">—</p>
+          </div>
+          <div class="badge-group" id="confMeta"></div>
+        </div>
+
+        <div class="configure-grid">
+          <div class="form-row">
+            <label for="targetSelect" class="form-label-highlight">
+              <span>🎯 Target Column to Predict</span>
+              <span class="label-tag">Required</span>
+            </label>
+            <select id="targetSelect" class="select-styled"></select>
+            <div class="form-hint">The autonomous agent analyzes unique value distributions to infer binary classification, multiclass, or regression.</div>
+          </div>
+
+          <details class="adv-config">
+            <summary>
+              <span>⚙️ Scalability & Distributed Execution Thresholds</span>
+              <span class="summary-sub">Configure memory & Dask routing parameters</span>
+            </summary>
+            <div class="adv-grid">
+              <div class="form-row">
+                <label for="distMbInput">Distributed Threshold (MB)</label>
+                <input type="number" id="distMbInput" value="500" min="1" class="input-styled">
+                <div class="form-hint">Datasets exceeding this memory footprint route to out-of-core Dask.</div>
+              </div>
+              <div class="form-row">
+                <label for="distRowsInput">Distributed Threshold (Rows)</label>
+                <input type="number" id="distRowsInput" value="1000000" min="1000" class="input-styled">
+                <div class="form-hint">Datasets exceeding 1M rows automatically leverage distributed chunks.</div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="preview-box">
+          <div class="preview-header">
+            <div class="preview-title">
+              <span class="icon">🔍</span> Raw Dataset Preview (First 10 Rows)
+            </div>
+            <span class="preview-note">Preview before agent cleaning & encoding</span>
+          </div>
+          <div class="table-wrap table-glow" id="previewTableWrap"></div>
+        </div>
+
+        <div class="panel-actions">
+          <button class="btn btn-ghost" id="confCancelBtn">Cancel</button>
+          <button class="btn btn-primary btn-glow" id="launchBtn">
+            <span>Launch Autonomous Agent</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: Running Progress & Reasoning Logs -->
+    <section class="view" id="view-running" hidden>
+      <div class="running-header glass-card">
+        <div class="spinner-radar">
+          <div class="radar-ping"></div>
+          <div class="radar-core"></div>
+        </div>
+        <div class="running-text">
+          <span class="badge-live"><span class="blink-dot"></span> LIVE EXECUTION</span>
+          <h2>Autonomous Agent Pipeline in Progress</h2>
+          <p class="muted">Live audit trail: every scientific decision, imputation choice, and model evaluation logged in real time.</p>
+        </div>
+      </div>
+
+      <div class="progress-card glass-panel">
+        <div class="stream-header">
+          <div class="stream-title">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span class="stream-label">Agent Reasoning Stream</span>
+          </div>
+          <span class="stream-counter" id="streamCounter">0 stages recorded</span>
+        </div>
+        <div class="records-stream" id="runningRecords"></div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: Completed Results & Full Tabbed Suite -->
+    <section class="view" id="view-results" hidden>
+
+      <!-- Results Header Bar -->
+      <div class="results-header glass-card">
+        <div class="results-title-group">
+          <div class="badge-success-row">
+            <span class="badge-success"><span class="badge-check">✓</span> Autonomous Pipeline Finished</span>
+            <span class="badge-tag" id="resBackendBadge">Local Backend</span>
+          </div>
+          <h2 id="resTitle">Dataset Results & Agent Intelligence</h2>
+        </div>
+        
+        <div class="header-actions">
+          <!-- Primary Cleaned CSV Download Button -->
+          <a class="btn btn-accent btn-glow" id="downloadCleanedBtn" href="#" download>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Download Cleaned CSV ⬇</span>
+          </a>
+
+          <!-- Feature Matrix Download Button -->
+          <a class="btn btn-secondary" id="downloadEngBtn" href="#" download title="Download full feature-engineered matrix">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            <span>Feature Matrix (CSV)</span>
+          </a>
+
+          <!-- Audit Markdown Report -->
+          <a class="btn btn-ghost" id="downloadReportBtn" href="#" target="_blank" title="Download complete markdown audit report">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <span>Report (MD)</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" id="mainNavTabs">
+        <button class="tab-btn active" data-tab="tab-overview">
+          <span class="tab-icon">📊</span> Overview
+        </button>
+        <button class="tab-btn" data-tab="tab-prep">
+          <span class="tab-icon">✨</span> Cleaned Data & Quality
+        </button>
+        <button class="tab-btn" data-tab="tab-eda">
+          <span class="tab-icon">📈</span> Auto EDA
+        </button>
+        <button class="tab-btn" data-tab="tab-models">
+          <span class="tab-icon">🏆</span> Models & Optuna
+        </button>
+        <button class="tab-btn" data-tab="tab-eval">
+          <span class="tab-icon">🔍</span> Evaluation & SHAP
+        </button>
+        <button class="tab-btn" data-tab="tab-whatif">
+          <span class="tab-icon">🎛️</span> What-If Lab
+        </button>
+        <button class="tab-btn" data-tab="tab-assistant">
+          <span class="tab-icon">💬</span> AI Assistant
+        </button>
+        <button class="tab-btn" data-tab="tab-registry">
+          <span class="tab-icon">📦</span> Model Registry
+        </button>
+        <button class="tab-btn" data-tab="tab-drift">
+          <span class="tab-icon">🔄</span> Drift & Retrain
+        </button>
+      </nav>
+
+      <!-- TAB 1: OVERVIEW -->
+      <div class="tab-content active" id="tab-overview">
+        <!-- Hero Metrics Grid -->
+        <div class="metrics-grid" id="overviewMetrics"></div>
+
+        <!-- Download Results Section -->
+        <div class="card glass-card mt-4" id="downloadResultsSection">
+          <div class="card-title-row">
+            <div>
+              <div class="card-title">📥 Download Results</div>
+              <p class="muted">Download structured CSV files and full reports generated from the current pipeline run.</p>
+            </div>
+            <a class="btn btn-accent btn-glow btn-sm" id="btnDownloadAllCsvs" href="#" download>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Download All CSVs</span>
+            </a>
+          </div>
+
+          <div class="download-results-grid mt-3" id="csvDownloadButtonsGrid">
+            <a class="btn btn-secondary btn-sm" id="btnDlFullReport" href="#" target="_blank">
+              📄 Download Full Report
+            </a>
+            <a class="btn btn-secondary btn-sm" id="btnDlModelResults" href="#" download>
+              🏆 Download Model Results CSV
+            </a>
+            <a class="btn btn-secondary btn-sm" id="btnDlPredictions" href="#" download>
+              🔮 Download Predictions CSV
+            </a>
+            <a class="btn btn-secondary btn-sm" id="btnDlFeatureImportance" href="#" download>
+              🧠 Download Feature Importance CSV
+            </a>
+            <a class="btn btn-secondary btn-sm" id="btnDlDatasetProfile" href="#" download>
+              📊 Download Dataset Profile CSV
+            </a>
+            <a class="btn btn-secondary btn-sm" id="btnDlPreprocessingLog" href="#" download>
+              🧹 Download Preprocessing Log CSV
+            </a>
+            <a class="btn btn-secondary btn-sm" id="btnDlDecisionLog" href="#" download>
+              📋 Download Decision Log CSV
+            </a>
+            <a class="btn btn-secondary btn-sm" id="btnDlAnomalies" href="#" download>
+              ⚠️ Download Anomalies CSV
+            </a>
+          </div>
+        </div>
+
+        <div class="card glass-card mt-4">
+          <div class="card-title">
+            <span>🏆 Model Evaluation Leaderboard</span>
+            <span class="card-sub-badge">Cross-Validated & Held-out Tested</span>
+          </div>
+          <div class="table-wrap" id="overviewLeaderboardTable"></div>
+        </div>
+
+        <div class="card glass-card mt-4">
+          <div class="card-title">
+            <span>📋 Autonomous Agent Decision Audit Trail</span>
+            <span class="card-sub-badge">100% Explainable & Traceable</span>
+          </div>
+          <div class="decision-feed" id="overviewAuditFeed"></div>
+        </div>
+      </div>
+
+      <!-- TAB 2: CLEANED DATA & PREPROCESSING (UPGRADED) -->
+      <div class="tab-content" id="tab-prep">
+        <!-- Cleaned CSV Preview Card -->
+        <div class="card glass-card">
+          <div class="card-title-row">
+            <div>
+              <div class="card-title">💾 Cleaned Dataset Artifact (Generated & Ready)</div>
+              <p class="muted">This dataset contains all cleaned, imputed, and sanitized columns, ready for production use or analysis.</p>
+            </div>
+            <div class="card-action-btns">
+              <a class="btn btn-accent btn-sm" id="tabPrepCleanedDownload" href="#" download>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Cleaned CSV
+              </a>
+              <a class="btn btn-secondary btn-sm" id="tabPrepEngDownload" href="#" download>
+                Download Feature Matrix
+              </a>
+            </div>
+          </div>
+
+          <div class="cleaned-stats-pills" id="cleanedStatsPills"></div>
+
+          <div class="preview-box mt-3">
+            <div class="preview-label">Cleaned Dataset Sample (First 12 Rows)</div>
+            <div class="table-wrap table-glow" id="cleanedTableWrap"></div>
+          </div>
+        </div>
+
+        <div class="card glass-card mt-4">
+          <div class="card-title">🔬 Automated Preprocessing Decisions & Justifications</div>
+          <ul class="clean-list" id="prepExplanationsList"></ul>
+        </div>
+
+        <div class="grid-2col mt-4">
+          <div class="card glass-card">
+            <div class="card-title">🛡️ Anomaly Detection (Isolation Forest & LOF)</div>
+            <div id="anomalySummaryContent"></div>
+          </div>
+          <div class="card glass-card">
+            <div class="card-title">⚖️ Class Imbalance Handling Strategy</div>
+            <div id="imbalanceSummaryContent"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: AUTO EDA -->
+      <div class="tab-content" id="tab-eda">
+        <div class="card glass-card">
+          <div class="card-title">📊 Dataset Profiling & Distribution Characteristics</div>
+          <div class="grid-2col" id="edaSummaryGrid"></div>
+        </div>
+
+        <div class="card glass-card mt-4">
+          <div class="card-title-row">
+            <div>
+              <div class="card-title">📈 Diagnostic Visualizations</div>
+              <p class="muted">Click any diagnostic plot to expand in high-definition lightbox.</p>
+            </div>
+          </div>
+          <div class="gallery-grid" id="edaPlotGallery"></div>
+        </div>
+      </div>
+
+      <!-- TAB 4: MODELS & TUNING -->
+      <div class="tab-content" id="tab-models">
+        <div class="card glass-card">
+          <div class="card-title-row">
+            <div>
+              <div class="card-title">⚡ Optuna Bayesian Hyperparameter Optimization</div>
+              <p class="muted">Tree-structured Parzen Estimator (TPE) search across model families.</p>
+            </div>
+          </div>
+          <div class="table-wrap" id="tuningDetailTable"></div>
+        </div>
+      </div>
+
+      <!-- TAB 5: EVALUATION & SHAP -->
+      <div class="tab-content" id="tab-eval">
+        <div class="card glass-card">
+          <div class="card-title">🎯 Held-out Test Performance Metrics</div>
+          <div class="table-wrap" id="evalMetricsTable"></div>
+        </div>
+
+        <div class="card glass-card mt-4">
+          <div class="card-title">📉 Model Diagnostic Plots (ROC, PR, Residuals)</div>
+          <div class="gallery-grid" id="evalPlotGallery"></div>
+        </div>
+
+        <div class="card glass-card mt-4">
+          <div class="card-title">🧠 Explainable AI & Feature Attributions (SHAP)</div>
+          <div class="grid-2col">
+            <div>
+              <h4 class="subheading">Ranked Feature Importance (Mean |SHAP|)</h4>
+              <div class="table-wrap" id="shapRankedTable"></div>
+            </div>
+            <div>
+              <h4 class="subheading">SHAP Summary Visualizations</h4>
+              <div class="gallery-grid-compact" id="shapPlotGallery"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: WHAT-IF ANALYSIS -->
+      <div class="tab-content" id="tab-whatif">
+        <div class="card glass-card">
+          <div class="card-title">🎛️ Counterfactual & What-If Simulation Engine</div>
+          <p class="muted">Tweak any input feature below to immediately calculate model predictions, class probabilities, and top driving contributors.</p>
+
+          <div class="grid-2col mt-3">
+            <div>
+              <h3 class="subheading">Record Input Features</h3>
+              <form id="whatifForm" class="whatif-form-grid"></form>
+              <div class="form-actions mt-3">
+                <button type="button" class="btn btn-primary btn-glow" id="whatifPredictBtn">Compute Prediction</button>
+                <button type="button" class="btn btn-secondary" id="whatifResetBtn">Reset to Baseline</button>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="subheading">Live Prediction & Probability</h3>
+              <div class="whatif-result-card glass-panel" id="whatifResultBox">
+                <div class="empty-state">Click "Compute Prediction" to evaluate this record.</div>
+              </div>
+
+              <div class="comparison-card mt-3 glass-panel" id="whatifCompareBox" hidden>
+                <h4 class="subheading">Counterfactual Feature Comparison</h4>
+                <div id="compareDetails"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 7: AI ASSISTANT -->
+      <div class="tab-content" id="tab-assistant">
+        <div class="card glass-card">
+          <div class="card-title">🤖 AI Data Scientist Assistant</div>
+          <p class="muted">Ask natural language questions about your dataset, metrics, winning models, preprocessing choices, or SHAP attributions.</p>
+
+          <div class="quick-questions">
+            <span class="qq-label">Suggested prompts:</span>
+            <button class="qq-chip" data-q="Why did the final model win?">Why did the final model win?</button>
+            <button class="qq-chip" data-q="Which features matter most?">Which features matter most?</button>
+            <button class="qq-chip" data-q="What preprocessing was applied?">What preprocessing was applied?</button>
+            <button class="qq-chip" data-q="Did you detect any anomalies?">Did you detect any anomalies?</button>
+            <button class="qq-chip" data-q="Is there class imbalance in the data?">Is there class imbalance?</button>
+            <button class="qq-chip" data-q="How can I download the cleaned dataset?">How can I download the cleaned dataset?</button>
+          </div>
+
+          <div class="chat-container mt-3">
+            <div class="chat-messages" id="chatMessages">
+              <div class="chat-msg bot">
+                <div class="msg-avatar">🤖</div>
+                <div class="msg-bubble">
+                  Hello! I am your <strong>AutoDS-Agent AI Assistant</strong>. I have full context on this run's profiling, skew-aware preprocessing, Optuna leaderboard, held-out metrics, and SHAP importances. How can I assist you?
+                </div>
+              </div>
+            </div>
+
+            <form class="chat-input-bar" id="chatForm">
+              <input type="text" id="chatInput" placeholder="Ask a question about this run..." autocomplete="off">
+              <button type="submit" class="btn btn-primary btn-sm">
+                <span>Send</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 8: MODEL REGISTRY -->
+      <div class="tab-content" id="tab-registry">
+        <div class="card glass-card">
+          <div class="card-title">📦 Model Artifact Registry</div>
+          <p class="muted">Versioned joblib models with hyperparameter configurations, metrics sidecars, and lineage timestamps.</p>
+          <div class="table-wrap mt-3" id="registryTableWrap"></div>
+        </div>
+      </div>
+
+      <!-- TAB 9: DRIFT MONITORING -->
+      <div class="tab-content" id="tab-drift">
+        <div class="card glass-card">
+          <div class="card-title">🔄 Production Data Drift Detection & Auto-Retraining</div>
+          <p class="muted">Upload new production data to perform two-sample Kolmogorov-Smirnov (KS) tests and Chi-Square tests against training baseline.</p>
+
+          <div class="drift-upload-box mt-3">
+            <input type="file" id="driftFileInput" accept=".csv" class="input-styled">
+            <button class="btn btn-primary" id="driftCheckBtn">Run Statistical Drift Analysis</button>
+          </div>
+
+          <div class="drift-results mt-4" id="driftResultsBox" hidden>
+            <div id="driftSummaryBadge"></div>
+            <div class="table-wrap mt-3" id="driftFeaturesTableWrap"></div>
+            
+            <div class="retrain-section mt-4" id="retrainSection" hidden>
+              <h4 class="subheading">Performance-Gated Automated Retraining</h4>
+              <p class="muted">Significant covariate drift detected. Retrain the model on pooled reference + newly arrived data.</p>
+              <button class="btn btn-accent btn-glow" id="retrainBtn">Trigger Auto-Retraining</button>
+              <div class="retrain-log mt-2" id="retrainLog" hidden></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- Image Lightbox Modal for High-Res Plot Inspection -->
+<div class="lightbox-modal" id="plotLightbox" hidden style="display: none;">
+  <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+  <div class="lightbox-content">
+    <div class="lightbox-header">
+      <span class="lightbox-title" id="lightboxTitle">Diagnostic Plot</span>
+      <button class="lightbox-close" id="lightboxCloseBtn">✕</button>
+    </div>
+    <div class="lightbox-img-wrap">
+      <img id="lightboxImg" src="" alt="Expanded Plot">
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}?v=2.0.1"></script>
+</body>
+</html>
