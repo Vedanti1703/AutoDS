@@ -2,7 +2,20 @@
 
 All notable changes to the AutoDS-Agent project will be documented in this file.
 
+## [Phase 2 - Big Data Ingestion & Streaming] - 2026-10-17
+
+### Added
+- **`StreamingIngestAgent`** (`autods_agent/ingestion.py`): Scalable dataset ingestion — pandas (small), Dask (large), chunked-pandas fallback (Dask unavailable). Supports CSV & Parquet. Graceful import errors logged.
+- **`OnlineLearningAgent`** (`autods_agent/online_learning.py`): Incremental `partial_fit` training (SGDClassifier/Regressor, PassiveAggressive, Perceptron, BernoulliNB). Online scaler, per-batch metric tracking, multi-epoch, auto model selection.
+- **`csv_to_parquet()`**: Utility to convert large CSVs to Parquet for faster future ingestion.
+- **`RuleBasedReasoner._q_online_model`**: Routes to SGDClassifier (classification) or SGDRegressor (regression).
+- **Tests** (`tests/test_phase2_bigdata.py`, 16 tests): ingestion paths, parquet roundtrip, online clf/reg, multi-epoch, metric tracking, reasoner rules.
+
+### Changed
+- `autods_agent/__init__.py`: exports `StreamingIngestAgent`, `csv_to_parquet`, `OnlineLearningAgent`; bumped `__version__` → `2.1.0`
+
 ## [Phase 1 - Correctness & Leakage Fixes] - 2026-10-17
+
 
 ### Added
 - **Formal Audit**: Added [AUDIT.md](file:///c:/Users/Vedanti/Downloads/BDA-project--main/AUDIT.md) confirming issues (a) data leakage, (b) naked estimator registry, (c) tuning metric bias, and (d) repo pollution.

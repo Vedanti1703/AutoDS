@@ -34,6 +34,8 @@ from .assistant import DataScienceAssistant, build_assistant_context
 from .registry import ModelRegistry
 from .drift import DriftDetectionAgent
 from .scalability import ScalabilityExperiment
+from .ingestion import StreamingIngestAgent, csv_to_parquet
+from .online_learning import OnlineLearningAgent
 from .reporting import ReportingAgent
 from .csv_export import CSVExportManager
 from .utils import RunLog, DecisionRecord
@@ -62,6 +64,9 @@ __all__ = [
     "ModelRegistry",
     "DriftDetectionAgent",
     "ScalabilityExperiment",
+    "StreamingIngestAgent",
+    "csv_to_parquet",
+    "OnlineLearningAgent",
     "ReportingAgent",
     "CSVExportManager",
     "RunLog",
@@ -71,4 +76,4 @@ __all__ = [
     "AnthropicReasoner",
 ]
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"

@@ -136,6 +136,21 @@ class RuleBasedReasoner(BaseReasoner):
                 f"{n_features} features, regression task — univariate F-test is fast "
                 f"and appropriate for continuous targets.")
 
+    def _q_online_model(self, ctx: dict) -> Tuple[str, str]:
+        task = ctx.get("task_type", "classification")
+        if task == "classification":
+            return (
+                "SGDClassifier",
+                "SGDClassifier with log_loss supports partial_fit, probability "
+                "estimates, and is the most versatile incremental classifier for "
+                "streaming tabular data.",
+            )
+        return (
+            "SGDRegressor",
+            "SGDRegressor with squared_error supports partial_fit and provides "
+            "online gradient descent for continuous target regression.",
+        )
+
     def _q_final_model_choice(self, ctx: dict) -> Tuple[str, str]:
         scores: dict = ctx["scores"]
         best = max(scores, key=scores.get)
